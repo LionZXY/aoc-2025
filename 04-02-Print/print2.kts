@@ -1,6 +1,6 @@
 import java.io.File
 
-var matrix = File("input.txt").readLines()
+val matrix = File("input.txt").readLines()
 
 fun checkCell(x: Int, y: Int): Boolean {
     var rollsCount = 0
@@ -25,17 +25,14 @@ checkCell(7, 0)
 
 var solution = 0
 
-var newMatrix = matrix
-do {
-    matrix = newMatrix
-    newMatrix = matrix.mapIndexed { y, line ->
-        line.mapIndexed { x, ch ->
-            if (ch == '@' && checkCell(x, y)) {
-                solution++
-                'X'
-            } else ch
-        }.joinToString("")
-    }
-} while (newMatrix != matrix)
+matrix.forEachIndexed { y, line ->
+    val newLine = line.mapIndexed { x, ch ->
 
+        if (ch == '@' && checkCell(x, y)) {
+            solution++
+            'X'
+        } else ch
+    }.joinToString("")
+    println("$line: $newLine")
+}
 println(solution)
