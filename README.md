@@ -10,3 +10,5 @@ Tasks:
 - [Day 4: Printing Department - Part 2](04-02-Print/print2.kts)
 - [Day 5: Cafeteria - Part 1](05-01-Cafeteria/cafeteria.kts)
 - [Day 5: Cafeteria - Part 2](05-02-Cafeteria/cafeteria2.kts)
+- [Day 6: Trash Compactor - Part 1](06-01-Math/math.kts)
+- [Day 6: Trash Compactor - Part 2](06-02-Math/math2.kts)
