@@ -7,27 +7,33 @@ val dividers = lines.map {
     }.filterNotNull().toSet()
 }
 
-val cache = mutableMapOf<Pair<Int, Int>, Long>()
+fun calculateLine(dividerIndexes: Set<Int>, liquidIndexes: Map<Int, Long>): Map<Int, Long> {
+    val newIndexes = mutableMapOf<Int, Long>()
 
-fun getSolution(lineIndex: Int, flowIndex: Int): Long {
-    val resultCached = cache[lineIndex to flowIndex]
-    if (resultCached != null) {
-        return resultCached
+    liquidIndexes.forEach { (index, variations) ->
+        if (dividerIndexes.contains(index)) {
+            newIndexes[index + 1] = newIndexes.getOrDefault(index + 1, 0) + variations
+            newIndexes[index - 1] = newIndexes.getOrDefault(index - 1, 0) + variations
+        } else {
+            newIndexes[index] = newIndexes.getOrDefault(index, 0) + variations
+        }
     }
-    val dividerIndexes = dividers[lineIndex]
-    if (lineIndex == lines.lastIndex) {
-        return 1
-    }
-    val result = if (dividerIndexes.contains(flowIndex)) {
-        getSolution(lineIndex + 1, flowIndex + 1) + getSolution(lineIndex + 1, flowIndex - 1)
-    } else {
-        getSolution(lineIndex + 1, flowIndex)
-    }
-    cache[lineIndex to flowIndex] = result
-    return result
+
+    return newIndexes
 }
 
-val solution = getSolution(0, lines.first().indexOf('S'))
+var currentIndexes = mapOf(lines.first().indexOf('S') to 1L)
 
+dividers.forEachIndexed { index, dividerIndexes ->
+    currentIndexes = calculateLine(dividerIndexes, currentIndexes)
+    printLine(index)
+}
 
-println(solution)
+println(currentIndexes.values.sum())
+
+fun printLine(line: Int) {
+    val newLine = lines[line].mapIndexed { index, ch ->
+        if (currentIndexes.contains(index)) '|' else ch
+    }.joinToString("")
+    println(newLine)
+}
