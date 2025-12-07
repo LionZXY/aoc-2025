@@ -12,3 +12,5 @@ Tasks:
 - [Day 5: Cafeteria - Part 2](05-02-Cafeteria/cafeteria2.kts)
 - [Day 6: Trash Compactor - Part 1](06-01-Math/math.kts)
 - [Day 6: Trash Compactor - Part 2](06-02-Math/math2.kts)
+- [Day 7: Laboratories - Part 1](07-01-Flow/flow.kts)
+- [Day 7: Laboratories - Part 2](07-02-Flow/flow2.kts)
