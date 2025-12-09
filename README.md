@@ -16,3 +16,5 @@ Tasks:
 - [Day 7: Laboratories - Part 2](07-02-Flow/flow2.kts)
 - [Day 8: Playground - Part 1](08-01-Connections/connections.kts)
 - [Day 8: Playground - Part 2](08-02-Connections/connections2.kts)
+- [Day 9: Movie Theater - Part 1](09-01-Plates/plates.kts)
+- [Day 9: Movie Theater - Part 2](09-02-Plates/plates2.kts) ([Image](09-02-Plates/output.png))

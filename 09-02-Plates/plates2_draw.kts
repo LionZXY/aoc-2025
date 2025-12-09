@@ -1,5 +1,7 @@
+import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
+import javax.imageio.ImageIO
 import kotlin.math.max
 import kotlin.math.min
 
@@ -42,7 +44,11 @@ fun getCompressedPlates(): List<Plate> {
 }
 
 val plates = getCompressedPlates()
-    .sortedBy { it.x }
+
+val height = plates.maxOf { it.y }
+val width = plates.maxOf { it.x }
+
+val image = BufferedImage(width + 1, height + 1, BufferedImage.TYPE_INT_RGB)
 
 // Create edges based on consecutive plates (actual polygon boundary)
 data class Edge(val x1: Int, val y1: Int, val x2: Int, val y2: Int)
@@ -54,6 +60,17 @@ for (i in 0 until plates.size) {
     val p2 = plates[(i + 1) % plates.size]  // Connect last to first
     if (p1.y == p2.y) continue
     edges.add(Edge(p1.x, p1.y, p2.x, p2.y))
+
+    // Draw the edge
+    val minX = minOf(p1.x, p2.x)
+    val maxX = maxOf(p1.x, p2.x)
+    val minY = minOf(p1.y, p2.y)
+    val maxY = maxOf(p1.y, p2.y)
+    for (x in minX..maxX) {
+        for (y in minY..maxY) {
+            image.setRGB(x, y, Color.GREEN.rgb)
+        }
+    }
 }
 
 fun checkPoint(px: Int, py: Int): Boolean {
@@ -86,35 +103,16 @@ fun checkPoint(px: Int, py: Int): Boolean {
     return intersectionCount % 2 == 1
 }
 
-fun isBoxValid(plate1: Plate, plate2: Plate): Boolean {
-    val minX = min(plate1.x, plate2.x)
-    val minY = min(plate1.y, plate2.y)
-    val maxX = max(plate1.x, plate2.x)
-    val maxY = max(plate1.y, plate2.y)
-    for (x in minX..maxX) {
-        for (y in minY..maxY) {
-            if (!checkPoint(x, y)) {
-                return false
-            }
-        }
-    }
-    return true
-}
-
-var maxDistance = 0L
-
-plates.forEachIndexed { indexX, plateX ->
-    plates.forEachIndexed { indexY, plateY ->
-        if (indexY < indexX) {
-            val distanceX = max(plateX.oldX!!, plateY.oldX!!) - min(plateX.oldX!!, plateY.oldX!!) + 1
-            val distanceY = max(plateX.oldY!!, plateY.oldY!!) - min(plateX.oldY!!, plateY.oldY!!) + 1
-            val distance = distanceX.toLong() * distanceY
-            if (distance > maxDistance && isBoxValid(plateX, plateY)) {
-                maxDistance = distance
-                println(plateX to plateY)
-            }
+for (y in 0..height) {
+    for (x in 0..width) {
+        if (checkPoint(x, y)) {
+            image.setRGB(x, y, Color.GREEN.rgb)
         }
     }
 }
 
-println(maxDistance)
+plates.forEach {
+    image.setRGB(it.x, it.y, Color.RED.rgb)
+}
+
+ImageIO.write(image, "png", File("output.png"))
