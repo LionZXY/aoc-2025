@@ -5,17 +5,16 @@ import kotlin.math.sqrt
 
 
 data class Point(
-    val x: Int,
-    val y: Int,
-    val z: Int
+    val x: Long,
+    val y: Long,
+    val z: Long
 ) {
-    fun getDistanceTo(point: Point): Double {
-        val distance = sqrt(
-            (x - point.x).toDouble().pow(2)
-                    + (y - point.y).toDouble().pow(2)
-                    + (z - point.z).toDouble().pow(2)
-        )
-        return distance
+    fun getDistanceTo(point: Point): Long {
+        val dx = x - point.x
+        val dy = y - point.y
+        val dz = z - point.z
+
+        return dx * dx + dy * dy + dz * dz
     }
 
     override fun toString(): String {
@@ -25,7 +24,7 @@ data class Point(
 
 val points = File("input.txt").readLines().map {
     val columns = it.split(',')
-    return@map Point(columns[0].toInt(), columns[1].toInt(), columns[2].toInt())
+    return@map Point(columns[0].toLong(), columns[1].toLong(), columns[2].toLong())
 }
 
 val existConnections = mutableSetOf<Pair<Point, Point>>()
@@ -42,8 +41,11 @@ repeat(1000) {
     }.minBy { (pointX, pointY) ->
         pointY.getDistanceTo(pointX)
     }
+    val distance = connection.first.getDistanceTo(connection.second)
+    val connectionLine = connection.toList().sortedBy { it.toString() }.toString()
+    println("$distance $connectionLine")
 
-    println(connection.toList().sortedBy { it.toString() })
+    //println("${connection.first.getDistanceTo(connection.second)}" + connection.toList().sortedBy { it.toString() })
     existConnections.add(connection)
 }
 

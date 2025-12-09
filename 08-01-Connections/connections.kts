@@ -11,6 +11,7 @@ data class Point(
         val dx = x - point.x
         val dy = y - point.y
         val dz = z - point.z
+
         return dx * dx + dy * dy + dz * dz
     }
 
@@ -24,96 +25,96 @@ val points = File("input.txt").readLines().map {
     return@map Point(columns[0].toLong(), columns[1].toLong(), columns[2].toLong())
 }
 
-// The simplest solution, but slow
-
-data class PointWithDistances(
-    val point: Point,
-    val sortedInstances: MutableList<Pair<Long, Point>>
+class Connection(
+    val first: Point,
+    val second: Point
 ) {
-    fun getLowestDistance(): Pair<Long, Point> {
-        return sortedInstances.first()
+    override fun hashCode(): Int {
+        return first.hashCode() * second.hashCode() * 31
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is Connection) {
+            first == other.first && second == other.second ||
+                    first == other.second && second == other.first
+        } else false
     }
 
     override fun toString(): String {
-        return "${getLowestDistance().first}: $point -> ${getLowestDistance().second}"
+        return (first to second).toList().sortedBy { it.toString() }.toString()
     }
 }
 
-val pointsWithDistances = points.map { point ->
-    PointWithDistances(
-        point, points
-            .mapNotNull {
-                if (point == it) {
-                    null
-                } else {
-                    point.getDistanceTo(it) to it
-                }
-            }
-            .sortedBy { (distance, _) -> distance }
-            .toMutableList()
-    )
+val tree = TreeSet<Pair<Long, Connection>>(compareBy { it.first })
+
+points.forEachIndexed { indexX, pointX ->
+    points.forEachIndexed { indexY, pointY ->
+        if (indexY < indexX) {
+            tree.add(pointX.getDistanceTo(pointY) to Connection(pointX, pointY))
+        }
+    }
 }
 
 data class Circuit(
-    val points: MutableSet<Point>
+    val connections: MutableSet<Connection>
 )
 
-
-val connections = HashMap<Point, Circuit>()
-
-var tree = PriorityQueue<PointWithDistances>(compareBy { it.getLowestDistance().first })
-tree.addAll(pointsWithDistances)
+val circuits = HashMap<Point, Circuit>()
 
 var connectionsCount = 0
-while (connectionsCount < 999) {
-    //println(tree)
-    // Get the lowest, get nearest point and put back
-    val pointWithDistances = tree.poll()
-    val shortestPoint = pointWithDistances.getLowestDistance().second
-    pointWithDistances.sortedInstances.removeFirst()
-    tree.add(pointWithDistances)
-
-    //println("${pointWithDistances.point} -> $shortestPoint")
+while (connectionsCount < 10) {
+    println(tree)
+    val (distance, connection) = tree.pollFirst()!!
 
     var addedPair = false
-    val firstCircuit = connections[pointWithDistances.point]
-    val secondCircuit = connections[shortestPoint]
+    val firstCircuit = circuits[connection.first]
+    val secondCircuit = circuits[connection.second]
     if (firstCircuit == null) {
         if (secondCircuit == null) {
-            val circuit = Circuit(mutableSetOf(pointWithDistances.point, shortestPoint))
-            connections[pointWithDistances.point] = circuit
-            connections[shortestPoint] = circuit
+            val circuit = Circuit(mutableSetOf(connection))
+            circuits[connection.first] = circuit
+            circuits[connection.second] = circuit
             addedPair = true
             connectionsCount++
         } else {
-            secondCircuit.points.add(pointWithDistances.point)
-            connections[pointWithDistances.point] = secondCircuit
-            addedPair = true
-            connectionsCount++
+            if (secondCircuit.connections.add(connection)) {
+                addedPair = true
+                connectionsCount++
+            }
+            circuits[connection.first] = secondCircuit
         }
     } else {
         if (secondCircuit == null) {
-            firstCircuit.points.add(shortestPoint)
-            connections[shortestPoint] = firstCircuit
-            addedPair = true
-            connectionsCount++
+            if (firstCircuit.connections.add(connection)) {
+                addedPair = true
+                connectionsCount++
+            }
+            circuits[connection.second] = firstCircuit
         } else if (firstCircuit == secondCircuit) {
-            // Skip, connection already registered
+            if (firstCircuit.connections.add(connection)) {
+                connectionsCount++
+                addedPair = true
+            }
         } else {
-            //println("Merge ${firstCircuit.points.size} and ${secondCircuit.points.size} (${firstCircuit.points.size + secondCircuit.points.size}) by ${pointWithDistances.point} -> $shortestPoint")
-            firstCircuit.points.addAll(secondCircuit.points)
-            secondCircuit.points.forEach { connections[it] = firstCircuit }
-            addedPair = true
+            firstCircuit.connections.addAll(secondCircuit.connections)
+            secondCircuit.connections.forEach {
+                circuits[it.first] = firstCircuit
+                circuits[it.second] = firstCircuit
+            }
             connectionsCount++
         }
     }
-    if (addedPair) {
-        println((pointWithDistances.point to shortestPoint).toList().sortedBy { it.toString() })
-    }
 }
 
-println(connections.values.distinct().size)
+println(circuits.values.distinct().size)
 
-val sizes = connections.values.distinct().map { it.points.size }
+val solutionCircuits = circuits.values.distinct()
+    .map { circuit ->
+        circuit.connections.flatMap {
+            listOf(it.first, it.second)
+        }.distinct().size
+    }
+    .sortedDescending()
+    .take(3)
 
-println(sizes.sortedDescending().take(3))
+println(solutionCircuits)
