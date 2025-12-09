@@ -14,3 +14,5 @@ Tasks:
 - [Day 6: Trash Compactor - Part 2](06-02-Math/math2.kts)
 - [Day 7: Laboratories - Part 1](07-01-Flow/flow.kts)
 - [Day 7: Laboratories - Part 2](07-02-Flow/flow2.kts)
+- [Day 8: Playground - Part 1](08-01-Connections/connections.kts)
+- [Day 8: Playground - Part 2](08-02-Connections/connections2.kts)

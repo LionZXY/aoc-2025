@@ -1,5 +1,6 @@
 import java.io.File
 import java.util.*
+import kotlin.system.exitProcess
 
 
 data class Point(
@@ -55,61 +56,59 @@ points.forEachIndexed { indexX, pointX ->
     }
 }
 
-data class Circuit(
-    val connections: MutableSet<Connection>
-)
+data class Circuit private constructor(
+    private val _connections: MutableSet<Connection>,
+    private val _points: MutableSet<Point>
+) {
+    val connection: Set<Connection> = _connections
+    val points: Set<Point> = _points
+
+    constructor(connection: Connection) : this(
+        mutableSetOf(connection),
+        mutableSetOf(connection.first, connection.second)
+    )
+
+    fun addConnection(connection: Connection) {
+        _connections.add(connection)
+        _points.add(connection.first)
+        _points.add(connection.second)
+    }
+}
 
 val circuits = HashMap<Point, Circuit>()
 
-var connectionsCount = 0
-while (connectionsCount < 10) {
-    println(tree)
+while (true) {
+    //println(tree)
     val (distance, connection) = tree.pollFirst()!!
 
     val firstCircuit = circuits[connection.first]
     val secondCircuit = circuits[connection.second]
     if (firstCircuit == null) {
         if (secondCircuit == null) {
-            val circuit = Circuit(mutableSetOf(connection))
+            val circuit = Circuit(connection)
             circuits[connection.first] = circuit
             circuits[connection.second] = circuit
-            connectionsCount++
         } else {
-            if (secondCircuit.connections.add(connection)) {
-                connectionsCount++
-            }
+            secondCircuit.addConnection(connection)
             circuits[connection.first] = secondCircuit
         }
     } else {
         if (secondCircuit == null) {
-            if (firstCircuit.connections.add(connection)) {
-                connectionsCount++
-            }
+            firstCircuit.addConnection(connection)
             circuits[connection.second] = firstCircuit
         } else if (firstCircuit == secondCircuit) {
-            if (firstCircuit.connections.add(connection)) {
-                connectionsCount++
-            }
+            firstCircuit.addConnection(connection)
         } else {
-            firstCircuit.connections.addAll(secondCircuit.connections)
-            secondCircuit.connections.forEach {
+            secondCircuit.connection.forEach {
                 circuits[it.first] = firstCircuit
                 circuits[it.second] = firstCircuit
+                firstCircuit.addConnection(it)
             }
-            connectionsCount++
         }
     }
-}
 
-println(circuits.values.distinct().size)
-
-val solutionCircuits = circuits.values.distinct()
-    .map { circuit ->
-        circuit.connections.flatMap {
-            listOf(it.first, it.second)
-        }.distinct().size
+    if (firstCircuit?.points?.size == points.size || secondCircuit?.points?.size == points.size) {
+        println(connection)
+        exitProcess(1)
     }
-    .sortedDescending()
-    .take(3)
-
-println(solutionCircuits)
+}
